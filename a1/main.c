@@ -71,15 +71,18 @@ int main ( void )
 	for (;;)
 	{
 		char *cmd = readline(GetCurrentDirectory());
-        
-        char *token = strtok(cmd, " ");
+        char *cmd_copy;
+        strcpy(cmd_copy,cmd);
+        char *token = strtok(cmd_copy, " ");
         if (strcmp(token,"cd") == 0){
             //Second token will be path
             token = strtok(NULL, " ");
             ChangeCWD(token);
+        } 
+        //Exectue will be default behaviour         
+        else {
+            ExecuteNonInternal(cmd);
         }
-        //Exectue will be default behaviour 
-        ExecuteNonInternal(cmd);
 		free (cmd);
 	}	
 }
