@@ -5,6 +5,7 @@
  */
 
 #include <unistd.h>
+#include <string.h> 
  
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +20,7 @@ int execvp(const char *file, char *const argv[]);
 /*
 This uses fork and execvp to perfrom basic terminal commands 
 */
-void ExecuteBasic(char *input)
+void ExecuteNonInternal(char *input)
 {
 
     char *token = strtok(input, " ");
@@ -47,13 +48,38 @@ void ExecuteBasic(char *input)
 }
 
 
+char* GetCurrentDirectory()
+{
+    char directory[2048];
+    getcwd(directory, sizeof(char)*256);
+    char suffix = '>';
+    strncat(directory,&suffix,1);
+    char *d = directory;
+    return d;
+}
+
+void ChangeCWD(char* path)
+{
+    int return_value = chdir(path);
+    if (return_value != 0){
+        printf("Error: Path Not Found\n");
+    }
+}
+
 int main ( void )
 {
 	for (;;)
 	{
-		char *cmd = readline ("shell>");
-        // Exectue will be default behaviour 
-        ExecuteBasic(cmd);
+		char *cmd = readline(GetCurrentDirectory());
+        
+        char *token = strtok(cmd, " ");
+        if (strcmp(token,"cd") == 0){
+            //Second token will be path
+            token = strtok(NULL, " ");
+            ChangeCWD(token);
+        }
+        //Exectue will be default behaviour 
+        ExecuteNonInternal(cmd);
 		free (cmd);
 	}	
 }
