@@ -40,6 +40,7 @@ void ExecuteNonInternal(char *input)
     pid_t child_pid = fork();
     if (child_pid == 0){
         execvp(arguments[0],arguments);
+        printf("%s: command not found\n", arguments[0]);
     }
     //Wait for child process to finish
     else { 
@@ -48,14 +49,13 @@ void ExecuteNonInternal(char *input)
 }
 
 
-char* GetCurrentDirectory()
+const char* GetCurrentDirectory()
 {
-    char directory[2048];
+    char *directory = malloc(sizeof(char)*256);
     getcwd(directory, sizeof(char)*256);
     char suffix = '>';
     strncat(directory,&suffix,1);
-    char *d = directory;
-    return d;
+    return directory;
 }
 
 void ChangeCWD(char* path)
@@ -70,8 +70,9 @@ int main ( void )
 {
 	for (;;)
 	{
-		char *cmd = readline(GetCurrentDirectory());
-        char *cmd_copy;
+        const char *dir = GetCurrentDirectory();
+		char *cmd = readline(dir);
+        char *cmd_copy = malloc(sizeof(cmd));
         strcpy(cmd_copy,cmd);
         char *token = strtok(cmd_copy, " ");
         if (strcmp(token,"cd") == 0){
@@ -83,6 +84,8 @@ int main ( void )
         else {
             ExecuteNonInternal(cmd);
         }
-		free (cmd);
+        free(dir);
+        free(cmd_copy);
+		free(cmd);
 	}	
 }
