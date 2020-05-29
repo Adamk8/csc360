@@ -43,7 +43,7 @@ void ExecuteNonInternal(char *input, int bg)
     }
 
     //Max 15 arguments +1 for the command
-    const char *arguments[16];
+    char *arguments[16];
     int arg_count = 0;
     //Used for waiting for child process 
     while( token != NULL ) {
@@ -79,8 +79,8 @@ void ExecuteNonInternal(char *input, int bg)
                     bg_processes[i].process_pid = child_pid;
                     bg_processes[i].id = i;
                     bg_processes[i].name = malloc(sizeof(base_cmd));
-                    bg_processes[i].status = 'R';
                     strcpy(bg_processes[i].name,base_cmd);
+                    bg_processes[i].status = 'R';
                     bg_count++;
                     break;
                 }
@@ -118,7 +118,7 @@ void ListBGProcesses()
             total++;
         }
     }
-    printf("Total Background Jobs: %d\n",total);
+    printf("Total background processes: %d\n",total);
 }
 
 void KillBGProcess(char *input)
@@ -133,13 +133,12 @@ void KillBGProcess(char *input)
             printf("Killed background process: %d:  %s  PID: %d \n",bg_processes[i].id,bg_processes[i].name,bg_processes[i].process_pid);
             bg_processes[i].process_pid = 0; 
             bg_processes[bg_count].id = -1; 
-            bg_processes[i].name = NULL;
+            free(bg_processes[i].name);
             bg_count--;
             return;
         }
     }
     printf("Could not find process with ID: %d\n",id);
-
 }
 
 void StopBGProcess(char *input)
@@ -175,7 +174,7 @@ void ResumeBGProcess(char *input)
                 printf("Error: Process already running\n");
             }
             else {
-                kill(bg_processes[i].process_pid, SIGSTOP);
+                kill(bg_processes[i].process_pid, SIGCONT);
                 bg_processes[i].status = 'R';
             }
             return;
@@ -187,7 +186,6 @@ void ResumeBGProcess(char *input)
 int CheckBGStatus(){
     int status; 
     for (int i = 0; i < 5; i++){
-        if (bg_processes[i].process_pid > 0){
             pid_t result = waitpid(bg_processes[i].process_pid, &status, WNOHANG);
             //if bg got invalid command set pid to 0 and skip
             if (result == -1){
@@ -199,7 +197,6 @@ int CheckBGStatus(){
                 bg_processes[i].process_pid = 0;
                 return 1;
             }
-        }
     }
     return 0;
 }
