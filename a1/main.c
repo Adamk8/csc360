@@ -64,16 +64,20 @@ void ExecuteNonInternal(char *input, int bg)
         if (bg && bg_count >= 5){
             printf("Max Background Processes running, Did not start: %s\n",arguments[0]);
             kill(getpid(),SIGKILL);
+        } else {
+            execvp(arguments[0],arguments);
+            printf("%s: command not found\n", arguments[0]);
+            kill(getpid(),SIGKILL);
         }
-        execvp(arguments[0],arguments);
-        printf("%s: command not found\n", arguments[0]);
-        kill(getpid(),SIGKILL);
     }
     //Wait for child process to finish
     else { 
         usleep( 50000 );
-        if (bg  && bg_count <= 5){
-            waitpid(child_pid, &child_status, WNOHANG);
+        if (bg  && bg_count < 5){
+            pid_t result = waitpid(child_pid, &child_status, WNOHANG);
+            if (result != 0){
+                bg_count--;
+            }
             for (int i = 0; i < 5; i++){
                 if (bg_processes[i].process_pid == 0){
                     bg_processes[i].process_pid = child_pid;
@@ -195,6 +199,7 @@ int CheckBGStatus(){
             else if (result != 0){
                 printf("Background process: %d: %s  PID: %d COMPLETED\n",bg_processes[i].id,bg_processes[i].name,bg_processes[i].process_pid);
                 bg_processes[i].process_pid = 0;
+                bg_count--;
                 return 1;
             }
     }
