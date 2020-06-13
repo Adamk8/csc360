@@ -1,0 +1,3 @@
+Train  0 is OFF the bridge(West)
+Train  2 is OFF the bridge(East)
+Train  1 is OFF the bridge(West)

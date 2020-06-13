@@ -1,0 +1,8 @@
+Train  4 is OFF the bridge(East)
+Train  5 is OFF the bridge(East)
+Train  0 is OFF the bridge(West)
+Train  6 is OFF the bridge(East)
+Train  7 is OFF the bridge(East)
+Train  1 is OFF the bridge(West)
+Train  2 is OFF the bridge(West)
+Train  3 is OFF the bridge(West)
