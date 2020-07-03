@@ -60,7 +60,6 @@ TrainInfo *createTrain ( void )
 	 * at least we know all the fields are initialized.
 	 */	 
 	info->trainId = idNumber++;
-	info->arrival = 0;
 	info->direction = (random() % 2 + 1);
 	info->length = (random() % MAX_LENGTH) + MIN_LENGTH;
 
@@ -85,7 +84,9 @@ TrainInfo *createTrain ( void )
 			info->direction = DIRECTION_WEST;
 		}
 		info->length = atoi(trainLength);
+		fclose(fp);
 	}
+	
 	return info;
 }
 

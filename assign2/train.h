@@ -33,7 +33,7 @@ typedef struct
 	int	trainId;
 	int	direction;
 	int	length;
-	int	arrival;// you might not need this, I used it in my solution
+			// you might not need this, I used it in my solution
 } TrainInfo;
 
 /*

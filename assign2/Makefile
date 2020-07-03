@@ -1,6 +1,6 @@
 # CC = gcc
 CFLAGS = -Wall -g   
-LDFLAGS = -lpthread 
+LDFLAGS = -lpthread -lrt
 
 A2OBJS = assign2.o train.o
 
