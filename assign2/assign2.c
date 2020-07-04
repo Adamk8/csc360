@@ -19,7 +19,7 @@
  * Be sure to comment this line out again before you submit 
  */
 
-#define DEBUG	1 
+//#define DEBUG	1 
 
 void ArriveBridge (TrainInfo *train);
 void CrossBridge (TrainInfo *train);
@@ -27,6 +27,8 @@ void LeaveBridge (TrainInfo *train);
 
 int *eastQueue;
 int *westQueue;
+int numTrains;
+int trainsCrossed = 0;
 volatile int eastConsec = 0;
 volatile int currentCrossing = -1; 
 volatile int currentEast = 0;
@@ -38,6 +40,8 @@ volatile int westIndex = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
+int	sem_init(sem_t *sem, int pshared, unsigned int value);
+sem_t hasNextTrain;
 
 /*
  * This function is started for each thread created by the
@@ -78,6 +82,7 @@ void ArriveBridge ( TrainInfo *train )
 		(train->direction == DIRECTION_WEST ? "West" : "East"));
 	#endif
 
+	pthread_mutex_lock(&mutex);
 	if (train->direction == DIRECTION_WEST){
 		westQueue[westIndex] = train->trainId;
 		if (westCount == 0){
@@ -94,7 +99,6 @@ void ArriveBridge ( TrainInfo *train )
 		eastIndex++;
 		eastCount++;
 	}
-
 	//tell the first train that arrives to go 
 	if(currentCrossing == -1){
 		currentCrossing = train->trainId;
@@ -104,6 +108,8 @@ void ArriveBridge ( TrainInfo *train )
 			currentEast++;
 		}
 	}
+	pthread_mutex_unlock(&mutex);
+	sem_post(&hasNextTrain);
 
 	pthread_mutex_lock(&mutex);
 	while(currentCrossing != train->trainId) {
@@ -140,7 +146,12 @@ void CrossBridge ( TrainInfo *train )
  */
 void LeaveBridge ( TrainInfo *train )
 {
-	//printf("West: %d, East: %d, Consec; %d\n",westCount,eastCount,eastConsec);
+	trainsCrossed++;
+	if (trainsCrossed != numTrains){
+		sem_wait(&hasNextTrain);
+		sem_wait(&hasNextTrain);
+		sem_post(&hasNextTrain);
+	}
 	pthread_mutex_lock(&mutex);
 	if (train->direction == DIRECTION_WEST){
 		westCount--;
@@ -148,7 +159,7 @@ void LeaveBridge ( TrainInfo *train )
 		if(eastCount > 0){
 			currentCrossing = eastQueue[currentEast]; 
 			currentEast++;
-		} else if(westCount > 0){
+		} else {
 			currentCrossing = westQueue[currentWest];
 			currentWest++;
 		} 
@@ -158,8 +169,9 @@ void LeaveBridge ( TrainInfo *train )
 		if (westCount == 0){
 			currentCrossing = eastQueue[currentEast]; 
 			currentEast++;
+			eastConsec--;
 		} else {
-			if (eastConsec < 2){
+			if (eastConsec < 2 && eastCount > 0){
 				currentCrossing = eastQueue[currentEast]; 
 				currentEast++;
 			} else {
@@ -210,11 +222,14 @@ int main ( int argc, char *argv[] )
 	 * Create all the train threads pass them the information about
 	 * length and direction as a TrainInfo structure
 	 */
+	numTrains = trainCount;
 	int tempEastQueue[trainCount];
 	int tempWestQueue[trainCount];
 	eastQueue = tempEastQueue;
 	westQueue = tempWestQueue;
 	
+	sem_init(&hasNextTrain,0,0);
+
 	for (i=0;i<trainCount;i++)
 	{
 		TrainInfo *info = createTrain();
