@@ -1,0 +1,12 @@
+Super block information: 
+Block size: 512
+Block count: 15360
+FAT starts: 1
+FAT blocks: 120
+Root directory start: 121
+Root directory blocks: 4
+
+FAT information: 
+Free Blocks: 15235
+Reserved Blocks: 121
+Allocated Blocks: 4
