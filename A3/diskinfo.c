@@ -67,4 +67,5 @@ int main (int argc, char *argv[]) {
     printf("Free Blocks: %d\n", free_blocks);
     printf("Reserved Blocks: %d\n", reserved_blocks);
     printf("Allocated Blocks: %d\n", allocated_blocks);
+    fclose(fp);
 }

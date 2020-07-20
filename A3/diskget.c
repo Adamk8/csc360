@@ -54,7 +54,6 @@ int main (int argc, char *argv[]) {
             fread(&char_buff, 31, 1, fp);
             file_name = char_buff;
             if (strcmp(file_name, target_file) == 0){
-                printf("File Found\n");
                 found = 1;
                 output_file = fopen(target_file, "w");
 
@@ -89,6 +88,6 @@ int main (int argc, char *argv[]) {
     if(!found){
         printf("File Not Found\n");
     }
-
-
+    fclose(output_file);
+    fclose(fp);
 }
