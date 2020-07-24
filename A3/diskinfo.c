@@ -3,13 +3,12 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include "Constants.h"
-
+#include "common.h"
 
 FILE *fp; 
 
 int main (int argc, char *argv[]) {
     char *filename = NULL;
-    uint32_t buffer;
     if (argc >= 2){
         filename = argv[1];
     } else {
@@ -18,29 +17,13 @@ int main (int argc, char *argv[]) {
     }
     fp = fopen(filename, "r");
     if (fp == NULL) printf("Failed to open file\n");
-    fseek(fp, BLOCKSIZE_OFFSET, SEEK_SET);
-    fread(&buffer, 2 , 1, fp);
-    int block_size = htons(buffer);
-
-    fseek(fp, BLOCKCOUNT_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int block_count = htonl(buffer);
-
-    fseek(fp, FATSTART_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int fat_start = htonl(buffer);
-
-    fseek(fp, FATBLOCKS_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int fat_blocks = htonl(buffer);
-
-    fseek(fp, ROOTDIRSTART_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int root_start = htonl(buffer);
-
-    fseek(fp, ROOTDIRBLOCKS_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int root_blocks = htonl(buffer);
+    
+    int block_size = GetBlockSize(fp);
+    int block_count = GetBlockCount(fp);
+    int fat_start = GetFatStart(fp);
+    int fat_blocks = GetFatBlocks(fp);
+    int root_start = GetRootStart(fp);
+    int root_blocks = GetRootBlocks(fp);
 
     printf("Super block information:\n");
     printf("Block size: %d\n", block_size);
@@ -57,8 +40,7 @@ int main (int argc, char *argv[]) {
     int fat_start_block = block_size*fat_start;
     fseek(fp, fat_start_block, SEEK_SET);
     for (int i = 0; i < block_count; i++){
-        fread(&buffer, 4, 1, fp);
-        status = htonl(buffer);
+        status = GetFatStatus(fp);
         if (status == FAT_FREE) free_blocks++;
         else if (status == FAT_RESERVED) reserved_blocks++;
         else allocated_blocks++;

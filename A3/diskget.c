@@ -4,6 +4,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include "Constants.h"
+#include "common.h"
 
 
 FILE *fp; 
@@ -18,27 +19,16 @@ int main (int argc, char *argv[]) {
         filename = argv[1];
         target_file = argv[2];
     } else {
-        printf("Please provide location for disk image\n"); 
+        printf("Please provide location for disk image and target file\n"); 
         return -1;
     }
     fp = fopen(filename, "r");
     if (fp == NULL) printf("Failed to open file\n");
 
-    fseek(fp, BLOCKSIZE_OFFSET, SEEK_SET);
-    fread(&buffer, 2 , 1, fp);
-    int block_size = htons(buffer);
-
-    fseek(fp, ROOTDIRSTART_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int root_start = htonl(buffer);
-
-    fseek(fp, ROOTDIRBLOCKS_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int root_blocks = htonl(buffer);
-
-    fseek(fp, FATSTART_OFFSET, SEEK_SET);
-    fread(&buffer, 4, 1, fp);
-    int fat_start = htonl(buffer);
+    int block_size = GetBlockSize(fp);
+    int root_start = GetRootStart(fp);
+    int root_blocks = GetRootBlocks(fp);
+    int fat_start = GetFatStart(fp);
 
     int root_start_block = block_size * root_start;
     int max_dir_entries = (block_size/64) * root_blocks;
@@ -47,12 +37,10 @@ int main (int argc, char *argv[]) {
     char *file_name = NULL;
     for (int i = 0; i < max_dir_entries; i++){
         fseek(fp, root_start_block + i*64, SEEK_SET);
-        fread(&buffer, 1 , 1, fp);
-        status = buffer; 
+        status = GetEntryStatus(fp);
         if (status == 3){
             fseek(fp, root_start_block + i*64 + 27, SEEK_SET);
-            fread(&char_buff, 31, 1, fp);
-            file_name = char_buff;
+            file_name = GetFileName(fp);
             if (strcmp(file_name, target_file) == 0){
                 found = 1;
                 output_file = fopen(target_file, "w");
@@ -81,12 +69,12 @@ int main (int argc, char *argv[]) {
                     fread(&buffer, 4, 1, fp);
                     next_file_block = htonl(buffer);
                 }
-
+            break;
             }
         }
     }
     if(!found){
-        printf("File Not Found\n");
+        printf("File not found\n");
     }
     fclose(output_file);
     fclose(fp);
