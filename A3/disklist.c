@@ -18,7 +18,10 @@ int main (int argc, char *argv[]) {
         return -1;
     }
     fp = fopen(filename, "r");
-    if (fp == NULL) printf("Failed to open file\n");
+    if (fp == NULL){
+        printf("Failed to open file\n");
+        return -1;
+    } 
 
     int block_size = GetBlockSize(fp);
     int root_start = GetRootStart(fp);
@@ -34,7 +37,7 @@ int main (int argc, char *argv[]) {
     for (int i = 0; i < max_dir_entries; i++){
         fseek(fp, root_start_block + i*64, SEEK_SET);
         status = GetEntryStatus(fp);
-        if (status == 3){
+        if (status == 3 || status == 5){
             fseek(fp, root_start_block + i*64 + DIRECTORY_FILE_SIZE_OFFSET, SEEK_SET);
             fread(&buffer, 4, 1, fp);
             file_size = htonl(buffer);
@@ -72,7 +75,11 @@ int main (int argc, char *argv[]) {
             fseek(fp, root_start_block + i*64 + DIRECTORY_FILENAME_OFFSET, SEEK_SET);
             fread(&char_buff, 31, 1, fp);
             file_name = char_buff;
-            printf("F %10d %30s %04d/%02d/%02d %02d:%02d:%02d\n", file_size,file_name,year,month,day,hour,minute,second);
+            if (status == 3){
+                printf("F %10d %30s %04d/%02d/%02d %02d:%02d:%02d\n", file_size,file_name,year,month,day,hour,minute,second);
+            } else {
+                printf("D %10d %30s %04d/%02d/%02d %02d:%02d:%02d\n", file_size,file_name,year,month,day,hour,minute,second);
+            }
         }
         
 

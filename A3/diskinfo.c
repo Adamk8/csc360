@@ -16,7 +16,10 @@ int main (int argc, char *argv[]) {
         return -1;
     }
     fp = fopen(filename, "r");
-    if (fp == NULL) printf("Failed to open file\n");
+    if (fp == NULL){
+        printf("Failed to open file\n");
+        return -1;
+    } 
     
     int block_size = GetBlockSize(fp);
     int block_count = GetBlockCount(fp);

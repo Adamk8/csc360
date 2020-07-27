@@ -11,6 +11,6 @@ disklist: disklist.c common.c
 diskget: diskget.c common.c
 	gcc $(CFLAGS) diskget.c common.c -o diskget
 	
-#diskput: diskput.c common.c
-#	gcc $(CFLAGS) diskput.c common.c -o diskput
+diskput: diskput.c common.c
+	gcc $(CFLAGS) diskput.c common.c -o diskput
 

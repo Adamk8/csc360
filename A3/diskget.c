@@ -23,7 +23,10 @@ int main (int argc, char *argv[]) {
         return -1;
     }
     fp = fopen(filename, "r");
-    if (fp == NULL) printf("Failed to open file\n");
+    if (fp == NULL){
+        printf("Failed to open file\n");
+        return -1;
+    } 
 
     int block_size = GetBlockSize(fp);
     int root_start = GetRootStart(fp);
@@ -75,6 +78,7 @@ int main (int argc, char *argv[]) {
     }
     if(!found){
         printf("File not found\n");
+        return -1;
     }
     fclose(output_file);
     fclose(fp);
