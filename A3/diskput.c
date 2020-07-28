@@ -91,7 +91,7 @@ void SetDirectoryEntry(int entry_address,
     int block_count, 
     int file_size,
     char *filename,
-    struct tm time)
+    struct tm *time)
     {
     uint8_t file_status = 3;
 
@@ -118,28 +118,30 @@ void SetDirectoryEntry(int entry_address,
 
     //Year
     fseek(fp, entry_address + DIRECTORY_MODIFY_OFFSET, SEEK_SET);
-    int year = ntohl(time.tm_year);
+    int year = time->tm_year + 1900;
+    year = ntohs(year);
     fwrite(&year,1,2,fp);
 
     //Month 
     fseek(fp, entry_address + DIRECTORY_MODIFY_OFFSET + 2, SEEK_SET);
-    fwrite(&(time.tm_mon),1,1,fp);
+    int month = time->tm_mon + 1;
+    fwrite(&month,1,1,fp);
 
     //Day
     fseek(fp, entry_address + DIRECTORY_MODIFY_OFFSET + 3, SEEK_SET);
-    fwrite(&(time.tm_mday),1,1,fp);
+    fwrite(&(time->tm_mday),1,1,fp);
 
     //Hour
     fseek(fp, entry_address + DIRECTORY_MODIFY_OFFSET + 4, SEEK_SET);
-    fwrite(&(time.tm_hour),1,1,fp);
+    fwrite(&(time->tm_hour),1,1,fp);
 
     //Minute
     fseek(fp, entry_address + DIRECTORY_MODIFY_OFFSET + 5, SEEK_SET);
-    fwrite(&(time.tm_min),1,1,fp);
+    fwrite(&(time->tm_min),1,1,fp);
 
     //second 
     fseek(fp, entry_address + DIRECTORY_MODIFY_OFFSET + 6, SEEK_SET);
-    fwrite(&(time.tm_sec),1,1,fp);
+    fwrite(&(time->tm_sec),1,1,fp);
 
     //filename
     fseek(fp, entry_address + DIRECTORY_FILENAME_OFFSET, SEEK_SET);
@@ -199,7 +201,7 @@ int main (int argc, char *argv[]) {
     int file_start_block = ReserveFatBlocks(fat_start, file_info.st_size, block_size);
     WriteFileContents(file_start_block,fat_start, file_info.st_size, block_size);
     time_t t = time(NULL);
-    struct tm time = *localtime(&t);
+    struct tm *time = localtime(&t);
 
     //Create directory entry
     for (int i = 0; i < max_dir_entries; i++){
